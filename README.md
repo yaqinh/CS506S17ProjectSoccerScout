@@ -1,0 +1,1 @@
+# CS506F17ProjectSoccerScout
