@@ -313,8 +313,13 @@ def findAllPlayerUrl(leagueUrl):
     return set(playerList)
 
 
-if __name__ == '__main__':
-    firstUrl = 'https://www.fifaindex.com/players/?league=13' #The first page url of FIFA player list in a league
+def main():
+    header = ['Name', 'Country', 'OverallScore', 'PotentialScore', 'Height', 'Weight', 'PreferredFoot', 'BirthDate', 
+          'Age', 'PreferredPositions', 'PlayerWorkRate', 'Team', 'TeamPosition', 'Year', 'Contract', 'BallControl',
+          'Dribbling', 'Marking', 'SlideTackle', 'StandTackle', 'Aggression', 'Reactions', 'AttPosition', 'Interceptions',
+          'Vision', 'Composure', 'Crossing', 'ShortPass', 'LongPass', 'Acceleration', 'Stamina', 'Strength', 'Balance',
+          'SprintSpeed', 'Agility', 'Jumping', 'Heading', 'ShotPower', 'Finishing', 'LongShots', 'Curve', 'FKAcc', 
+          'Penalties', 'Volleys', 'GKPositioning', 'GKDiving', 'GKHandling', 'GKKicking', 'GKReflexes']
 
     leagueListUrl = findAllLeagueUrl(firstUrl)
     leagueList = []
@@ -332,5 +337,12 @@ if __name__ == '__main__':
     players = pd.DataFrame(playerList, columns=header)
     
     print('CSV write started')
-    finalcsv.to_csv('FIFIndex_BPL_April_6_players.csv', index=True, header=header, mode='a') #dump to csv
+    players.to_csv('FIFIndex_BPL_April_6_players.csv', index=True, header=header, mode='w') #dump to csv
     print('Success')
+    
+    return 0
+    
+
+if __name__ == '__main__':
+    main('https://www.fifaindex.com/players/fifa17_126/?league=13') #The first page url of FIFA player list in a league
+    
