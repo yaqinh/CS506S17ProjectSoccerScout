@@ -5,9 +5,11 @@ import time
 import pandas as pd
 import numpy as np
 
+
 display = Display(visible=0, size=(800, 600))
 display.start()
 driver = webdriver.Chrome() #initialize the webdriver
+
 
 def singlePlayer(url):
     driver.get(url)
@@ -110,6 +112,9 @@ def singlePlayer(url):
     try: #get team infomation
         teamInfo = driver.find_element_by_xpath("""/html/body/div[3]/div[2]/div[2]/div[2]""").text.split('\n')
         team = teamInfo[5]
+        if team == 'Joined Club': #For those player who does not have country team infomation
+            team = teamInfo[0]
+            
         for index2 in range(len(teamInfo)):
             if re.search(r'\bPosition\b', teamInfo[index2]):
                 teamPosition = teamInfo[index2 + 1] 
@@ -274,14 +279,58 @@ def singlePlayer(url):
     
     return singleList
 
-singleList = singlePlayer('https://www.fifaindex.com/player/20801/cristiano-ronaldo/')
-header = ['Name', 'Country', 'OverallScore', 'PotentialScore', 'Height', 'Weight', 'PreferredFoot', 'BirthDate', 
-          'Age', 'PreferredPositions', 'PlayerWorkRate', 'Team', 'TeamPosition', 'Year', 'Contract', 'BallControl',
-          'Dribbling', 'Marking', 'SlideTackle', 'StandTackle', 'Aggression', 'Reactions', 'AttPosition', 'Interceptions',
-          'Vision', 'Composure', 'Crossing', 'ShortPass', 'LongPass', 'Acceleration', 'Stamina', 'Strength', 'Balance',
-          'SprintSpeed', 'Agilityd', 'Jumping', 'Heading', 'ShotPower', 'Finishing', 'LongShots', 'Curve', 'FKAcc', 
-          'Penalties', 'Volleys', 'GKPositioning', 'GKDiving', 'GKHandling', 'GKKicking', 'GKReflexes']
-playerList = []
-playerList.append(singleList)
-players = pd.DataFrame(playerList, columns=header)
-players
+
+def findAllLeagueUrl(firstUrl):
+    URL = firstUrl
+    playerListUrl = [firstUrl]
+
+    while (1):
+        driver.get(URL)
+        try:
+            #find the url for following player list in the Next Page button 
+            URL = driver.find_element_by_xpath("""/html/body/div[3]/div[2]/div[2]/div[3]/ul/li[2]/a""").get_attribute("href")
+            playerListUrl.append(URL)
+        except:
+            #print("End of player list url")
+            break
+    
+    return playerListUrl
+
+
+def findAllPlayerUrl(leagueUrl):
+    time.sleep(np.random.randint(2,  high=5))    
+    driver.get(leagueUrl)
+    playerList = []
+    try:
+        elems = driver.find_elements_by_xpath("//a[@href]")
+        for elem in elems:
+            url = elem.get_attribute("href")
+            if re.search(r'\bhttps://www.fifaindex.com/player/\b' ,url):
+                playerList.append(url)
+    except:
+        print(leagueUrl + ' urls not found')
+    
+    return set(playerList)
+
+
+if __name__ == '__main__':
+    firstUrl = 'https://www.fifaindex.com/players/?league=13' #The first page url of FIFA player list in a league
+
+    leagueListUrl = findAllLeagueUrl(firstUrl)
+    leagueList = []
+    for leagueUrl in leagueListUrl:
+        playerset = findAllPlayerUrl(leagueUrl)
+        print('current league url being scraped' + leagueUrl)
+        for playerUrl in playerset:
+            leagueList.append(playerUrl) #get all the url for every player in the league
+    
+    playerList = []
+    for playerUrl in leagueList:
+        singleList = singlePlayer(playerUrl) #get the detailed data for every player
+        playerList.append(singleList)
+    
+    players = pd.DataFrame(playerList, columns=header)
+    
+    print('CSV write started')
+    finalcsv.to_csv('FIFIndex_BPL_April_6_players.csv', index=True, header=header, mode='a') #dump to csv
+    print('Success')
