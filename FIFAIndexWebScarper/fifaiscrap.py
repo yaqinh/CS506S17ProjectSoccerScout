@@ -344,5 +344,12 @@ def main():
     
 
 if __name__ == '__main__':
-    main('https://www.fifaindex.com/players/fifa17_126/?league=13') #The first page url of FIFA player list in a league
+    #main('https://www.fifaindex.com/players/fifa17_126/?league=13') #The first page url of FIFA player list in a league
+    start = 74
+    end = 125
+    
+    for index in reversed(range(start, end+1)):
+        ur = 'https://www.fifaindex.com/players/fifa17_' + str(index) + '/?league=13'
+        print('current index: ' + str(index) + ' current url: ' + ur)
+        code = main(ur)
     
